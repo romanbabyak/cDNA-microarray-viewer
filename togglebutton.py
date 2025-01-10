@@ -21,7 +21,8 @@ class ToggleButton:
         self.frame=frame
         self.ic_path=ic_path
         self.ic_path_clicked=ic_path_clicked
-        self.b_size=kw.pop("sq_size", 40)
+        self.h_size=kw.pop("h_size", 40)
+        self.v_size=kw.pop("v_size", 40)
         self.compound=kw.pop("compound", "center")
         self.bg=kw.pop("bg", "#222020")
         self.border=kw.pop("border", 0)
@@ -32,10 +33,10 @@ class ToggleButton:
         self.clicked_state = False
 
         try:
-            self.icon_default=ImageTk.PhotoImage(Image.open(self.ic_path).resize((self.b_size,
-                                                                                  self.b_size)))
-            self.icon_clicked=ImageTk.PhotoImage(Image.open(self.ic_path_clicked).resize((self.b_size,
-                                                                                          self.b_size)))
+            self.icon_default=ImageTk.PhotoImage(Image.open(self.ic_path).resize((self.h_size,
+                                                                                  self.v_size)))
+            self.icon_clicked=ImageTk.PhotoImage(Image.open(self.ic_path_clicked).resize((self.h_size,
+                                                                                          self.v_size)))
 
             self.button = tk.Button(self.frame,
                                     image=self.icon_default,

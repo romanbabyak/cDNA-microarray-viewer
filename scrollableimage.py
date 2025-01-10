@@ -109,9 +109,9 @@ class ScrollableImage(tk.Frame):
 
         #bindings
         self.cnvs.bind("<Configure>", self._upd_center)
-        self.cnvs.bind("<MouseWheel>", self._mouse_scroll)
-        self.cnvs.bind("<ButtonPress-1>", self._rec_pos)
-        self.cnvs.bind("<B1-Motion>", self._drag_im)
+        self.cnvs.bind("<MouseWheel>", self.mouse_scroll)
+        self.cnvs.bind("<ButtonPress-1>", self.rec_pos)
+        self.cnvs.bind("<B1-Motion>", self.drag_im)
 
     def _upd_center(self, event=None):
         """
@@ -119,7 +119,7 @@ class ScrollableImage(tk.Frame):
         Also to adjust max outscroll durign window resize
         """
         self.cnvs.coords(self.image_id, self.cnvs.winfo_width() / 2, self.tk_im.height()/2-1)
-        self._move_to(self.offset_x, self.offset_y)
+        self.move_to(self.offset_x, self.offset_y)
         self._upd_upper_bound()
 
     def _upd_upper_bound(self):
@@ -197,7 +197,7 @@ class ScrollableImage(tk.Frame):
         """
         return self.or_im
 
-    def _rec_pos(self, event):
+    def rec_pos(self, event):
         """
         Records the current mouse position for im dragging
 
@@ -209,7 +209,7 @@ class ScrollableImage(tk.Frame):
 
         # logger.info("recording position: %s, %s", self.last_x, self.last_y)
 
-    def _drag_im(self, event):
+    def drag_im(self, event):
         """
         Drags the image in the canvas based on mouse movement
 
@@ -229,11 +229,11 @@ class ScrollableImage(tk.Frame):
         self.offset_x = max(0, min(self.offset_x, max_x_offset))
         self.offset_y = max(0, min(self.offset_y, max_y_offset))
 
-        self._move_to(self.offset_x, self.offset_y)
+        self.move_to(self.offset_x, self.offset_y)
 
-        self._rec_pos(event)
+        self.rec_pos(event)
 
-    def _move_to(self, offset_x, offset_y):
+    def move_to(self, offset_x, offset_y):
         """
         Moves the view of the image to the specified offsets, 
         with respect to the left upper corner
@@ -319,7 +319,7 @@ class ScrollableImage(tk.Frame):
         logger.info("new pyramid level %s with dim %sx%s and contrast window %s-%s",
                     level, width, height, self.contr[0], self.contr[1])
 
-    def _mouse_scroll(self, event):
+    def mouse_scroll(self, event):
         """
         Handles mouse scrolling for zooming in and out
 
@@ -425,6 +425,46 @@ class ScrollableImage(tk.Frame):
 
         self._crop_n_show(self.offset_x, self.offset_y, crop_x2, crop_y2)
 
+    def get_c_level(self):
+        """
+        Retrieves the current zoom level
+
+        Returns:
+            int: The current zoom level
+        """
+        return self.c_level
+
+    def get_offset(self):
+        """
+        Retrieves the current offset
+
+        Returns:
+            tuple: The current offset (x, y)
+        """
+        return (self.offset_x, self.offset_y)
+
+    def zoom_to_level(self, event, level):
+        """
+        Zooms the image to a specified level
+
+        Args:
+            level (int): The level to zoom to
+        """
+        if level==self.c_level:
+            return
+
+        if level=="outscroll":
+            event.delta=-1
+        elif self.c_level=="outscroll":
+            event.delta=1
+        elif level<self.c_level:
+            event.delta=-1
+        else:
+            event.delta=1
+
+        while self.c_level!=level:
+            self.mouse_scroll(event)
+
     def alter_contr(self, contr):
         """
         Alters the contrast of the displayed image
@@ -440,7 +480,7 @@ class ScrollableImage(tk.Frame):
                                                    self.pyramid[self.c_level][1][1])
             self.pyramid[self.c_level]=(res_im, (w, h), contr)
 
-            self._move_to(self.offset_x, self.offset_y)
+            self.move_to(self.offset_x, self.offset_y)
 
     def resize_keeping_ratio(self, image, width=None, height=None, inter=INTERPOLATION):
         """
