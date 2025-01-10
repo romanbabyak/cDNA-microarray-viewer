@@ -16,7 +16,7 @@ class GUI:
     A class to create a graphical user interface for an app
     """
     #track button states
-    comb_clicked=contr_clicked=red_clicked=green_clicked=both_clicked=im_loaded=False
+    comb_clicked=contr_clicked=red_clicked=green_clicked=both_clicked=im_loaded=comb_zoom_clicked=False
     #constant contrast guys
     STD_LOWER = 0
     STD_UPPER = 65535
@@ -47,7 +47,7 @@ class GUI:
         #most of self attributes
         self.left_frame=self.right_frame=self.new_frame=self.seperator=None
         self.gpath=self.rpath=self.gim=self.rim=self.cim=None
-        self.button_upload=self.button_comb=self.button_contr=None
+        self.button_upload=self.button_comb=self.button_contr=self.com_zoom=None
         self.contr_button_frame=self.button_green=self.button_red=self.button_both=None
         self.window_center=self.window_width=self.slider_center=self.slider_width=None
         self.window_center_frame=self.window_width_frame=None
@@ -58,6 +58,75 @@ class GUI:
         self.init_layout()
         self.root.update()
         self.toggle_radio_button('both')
+
+        self.root.bind("<MouseWheel>", self.check_zoom)
+        self.root.bind("<ButtonPress-1>", self.rec_pos)
+        self.root.bind("<B1-Motion>", self.drag_im)
+
+    def check_zoom(self, event):
+        """
+        Coupled zoom mode
+
+        Args:
+            event (tk.Event): The event object
+        """
+        if not self.comb_clicked and self.comb_zoom_clicked:
+            widget = event.widget
+            if widget.master in self.left_frame.children.values():
+                self.balance_comb_zoom(event, self.gim, self.rim)
+            elif widget.master in self.right_frame.children.values():
+                self.balance_comb_zoom(event, self.rim, self.gim)
+
+    def rec_pos(self, event):
+        """
+        Coupled record mode
+
+        Args:
+            event (tk.Event): The event object
+        """
+        if not self.comb_clicked and self.comb_zoom_clicked:
+            widget = event.widget
+            if widget.master in self.left_frame.children.values():
+                self.rim.rec_pos(event)
+            elif widget.master in self.right_frame.children.values():
+                self.gim.rec_pos(event)
+
+    def drag_im(self, event):
+        """
+        Coupled drag mode
+
+        Args:
+            event (tk.Event): The event object
+        """
+        if not self.comb_clicked and self.comb_zoom_clicked:
+            widget = event.widget
+            if widget.master in self.left_frame.children.values():
+                self.balance_comb_zoom(event, self.gim, self.rim)
+            elif widget.master in self.right_frame.children.values():
+                self.balance_comb_zoom(event, self.rim, self.gim)
+
+    def balance_comb_zoom(self, event, im_source, im_target):
+        """
+        Balances zoom and offset of two images
+
+        Args:
+            event (tk.Event): The event object
+            im_source (ScrollableImage): The source image
+            im_target (ScrollableImage): The target image
+        """
+        im_level=im_source.get_c_level()
+        x_offset, y_offset=im_source.get_offset()
+        im_target.zoom_to_level(event, im_level)
+
+        dims=im_target.pyramid[im_target.c_level][1]
+        im_target.offset_x=x_offset
+        im_target.offset_y=y_offset
+        max_x_offset = max(dims[0] - im_target.cnvs.winfo_width(), 0)
+        max_y_offset = max(dims[1] - im_target.cnvs.winfo_height(), 0)
+        x_offset=max(0, min(x_offset, max_x_offset))
+        y_offset= max(0, min(y_offset, max_y_offset))
+        im_target.move_to(x_offset,y_offset)
+
 
     def init_layout(self):
         """
@@ -98,6 +167,10 @@ class GUI:
             self.left_frame.pack_forget()
             logger.info("Left frame hidden")
 
+        if hasattr(self, 'seperator') and self.seperator.winfo_exists():
+            self.seperator.pack_forget()
+            logger.info("Seperator hidden")
+
         if hasattr(self, 'right_frame') and self.right_frame.winfo_exists():
             self.right_frame.pack_forget()
             logger.info("Right frame hidden")
@@ -109,6 +182,10 @@ class GUI:
         if hasattr(self, 'left_frame') and self.left_frame.winfo_exists():
             self.left_frame.pack(side="left", fill="both", expand=True)
             logger.info("Left frame shown")
+
+        if hasattr(self, 'seperator') and self.seperator.winfo_exists():
+            self.seperator.pack(side="left", fill="y")
+            logger.info("Seperator shown")
 
         if hasattr(self, 'right_frame') and self.right_frame.winfo_exists():
             self.right_frame.pack(side="right", fill="both", expand=True)
@@ -192,6 +269,9 @@ class GUI:
             self.button_red.pack_forget()
             self.button_both.pack_forget()
 
+            if self.comb_zoom_clicked:
+                self.comb_zoom_clicked = self.com_zoom.toggle_button_action()
+
             if self.new_frame is None:
                 self.new_frame=tk.Frame(self.root, bg="gray")
                 self.new_frame.pack(side="bottom", fill="both", expand=True)
@@ -259,7 +339,8 @@ class GUI:
         self.button_upload=ToggleButton(button_frame,
                                         ic_path="icons/upload_min.png",
                                         ic_path_clicked="icons/upload_min_toggle_white.png",
-                                        sq_size=38,
+                                        h_size=38,
+                                        v_size=38,
                                         compound="center",
                                         bg="#181818",
                                         border=0,
@@ -267,7 +348,8 @@ class GUI:
         self.button_comb=ToggleButton(button_frame,
                                       ic_path="icons/comp_min.png",
                                       ic_path_clicked="icons/comp_min_toggle_white.png",
-                                      sq_size=43,
+                                      h_size=43,
+                                      v_size=43,
                                       compound="center",
                                       bg="#181818",
                                       border=0,
@@ -275,11 +357,21 @@ class GUI:
         self.button_contr=ToggleButton(button_frame,
                                        ic_path="icons/contr_min.png",
                                        ic_path_clicked="icons/contr_min_toggle_white.png",
-                                       sq_size=40,
+                                       h_size=40,
+                                       v_size=40,
                                        compound="center",
                                        bg="#181818",
                                        border=0,
                                        command=self.toggle_button_contr)
+        self.com_zoom=ToggleButton(button_frame,
+                                       ic_path="icons/com_zoom_min.png",
+                                       ic_path_clicked="icons/com_zoom_min_toggle_white.png",
+                                       h_size=50,
+                                       v_size=25,
+                                       compound="center",
+                                       bg="#181818",
+                                       border=0,
+                                       command=self.toggle_button_comb_zoom)
 
     def add_contr_buttons(self, parent_frame=None):
         """
@@ -423,6 +515,13 @@ class GUI:
             self.toggle_contr_button_frame()
             self.contr_clicked = self.button_contr.toggle_button_action()
 
+    def toggle_button_comb_zoom(self):
+        """
+        Toggles the state of the combined zoom button
+        """
+        if self.im_loaded and not self.comb_clicked:
+            self.comb_zoom_clicked = self.com_zoom.toggle_button_action()
+
     def toggle_contr_button_frame(self):
         """
         Shows or hides the contrast adjustment panel
@@ -548,6 +647,8 @@ class GUI:
             self.toggle_button_comb()
         if self.contr_clicked:
             self.toggle_button_contr()
+        if self.comb_zoom_clicked:
+            self.toggle_button_comb_zoom()
         self.toggle_radio_button('both')
 
         self.seperator = self.gim = self.rim = self.cim= None
@@ -557,6 +658,7 @@ class GUI:
         self.window_width.set(self.DEFAULT_WIDTH)
         self.slider_center.set(self.DEFAULT_CENTER)
         self.slider_width.set(self.DEFAULT_WIDTH)
+        self.last_contr=self.last_contr_comb=(32767, 65535)
 
     def windowing_parameters(self, center, length):
         """
