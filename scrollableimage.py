@@ -58,11 +58,11 @@ class ScrollableImage(tk.Frame):
     """
     INTERPOLATION=cv2.INTER_LINEAR
     ZOOM_FACTOR=1.15
-    PRE_COMP=True #change to False for testing, faster loading
+    PRE_COMP=False #change to False for testing, faster loading
     PRE_COMP_LEVEL=5
     MAX_INZOOM_LEVEL=13
 
-    def __init__(self, master=None, **kw):
+    def __init__(self, coords_label, master=None, **kw):
         """
         Initializes a ScrollableImage instance
 
@@ -77,6 +77,7 @@ class ScrollableImage(tk.Frame):
         self.gim=kw.pop('gim', None)
         self.rim=kw.pop('rim', None)
         self.contr=(kw.pop('lower', None), kw.pop('upper', None))
+        self.coords_label = coords_label
 
         #dragging
         self.last_x = None
@@ -112,6 +113,7 @@ class ScrollableImage(tk.Frame):
         self.cnvs.bind("<MouseWheel>", self.mouse_scroll)
         self.cnvs.bind("<ButtonPress-1>", self.rec_pos)
         self.cnvs.bind("<B1-Motion>", self.drag_im)
+        self.cnvs.bind("<Motion>", self.show_pixel_coordinates)
 
     def _upd_center(self, event=None):
         """
@@ -513,3 +515,39 @@ class ScrollableImage(tk.Frame):
         logger.info("image resized to %s", dim)
 
         return (resized, dim[0], dim[1])
+
+    def get_pixel_coordinates(self, event):
+        offset_x = self.offset_x
+        offset_y = self.offset_y
+
+        resized_im = self.pyramid[self.c_level][0]
+        relative_x = offset_x + event.x
+        relative_y = offset_y + event.y
+
+        scale_x = self.or_im.shape[1] / resized_im.shape[1]
+        scale_y = self.or_im.shape[0] / resized_im.shape[0]
+
+        if(self.c_level == 'outscroll' or self.c_level < 0):
+            original_x = int(relative_x * scale_x)
+            original_x -= int(self.cnvs.winfo_width() / 2 * scale_x)
+            original_x += int(self.or_im.shape[1] / 2)
+            original_y = int(relative_y * scale_y)
+            original_x = max(0, min(self.or_im.shape[1] - 1, original_x))
+            original_y = max(0, min(self.or_im.shape[0] - 1, original_y))
+
+            return original_x, original_y
+        else:
+            original_x = max(0, min(self.or_im.shape[1] - 1, int(relative_x * scale_x)))
+            original_y = max(0, min(self.or_im.shape[0] - 1, int(relative_y * scale_y)))
+
+            return original_x, original_y
+
+    def show_pixel_coordinates(self, event):
+        original_x, original_y = self.get_pixel_coordinates(event)
+        if self.channel == 1:
+            self.coords_label.config(text=f"Green image: x: {original_x}/{self.or_im.shape[1]-1}, y: {original_y}/{self.or_im.shape[0]-1}")
+        elif self.channel == 2:
+            self.coords_label.config(text=f"Red image: x: {original_x}/{self.or_im.shape[1]-1}, y: {original_y}/{self.or_im.shape[0]-1}")
+        elif self.gim is not None and self.rim is not None:
+            self.coords_label.config(text=f"Combined image: x: {original_x}/{self.or_im.shape[1]-1}, y: {original_y}/{self.or_im.shape[0]-1}")
+

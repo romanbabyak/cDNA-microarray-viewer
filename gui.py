@@ -205,7 +205,7 @@ class GUI:
             self.right_frame = None
             logger.info("Right frame deleted")
 
-    def init_n_pack_im(self, image_path, channel, frame, width):
+    def init_n_pack_im(self, image_path, channel, coords_label, frame, width):
         """
         Creates ScrollableImage object, clears prev changes and packs an image into specified frame
 
@@ -221,7 +221,7 @@ class GUI:
             widget.destroy()
         #create ScrollableImage object ad pack into frame
         try:
-            image_window = ScrollableImage(master=frame, image_path=image_path, channel=channel,
+            image_window = ScrollableImage(coords_label=coords_label, master=frame, image_path=image_path, channel=channel,
                                            width=width, lower=self.STD_LOWER, upper=self.STD_UPPER)
         except Exception as e:
             self.del_lr_frames()
@@ -251,8 +251,12 @@ class GUI:
         self.right_frame.config(width=frame_width)
         logger.info("Frame width set to: %s", frame_width)
 
-        self.init_n_pack_im(gpath, 1, self.left_frame, frame_width)
-        self.init_n_pack_im(rpath, 2, self.right_frame, frame_width)
+        self.init_n_pack_im(gpath, 1, self.left_coords_label, self.left_frame, frame_width)
+        self.init_n_pack_im(rpath, 2, self.right_coords_label, self.right_frame, frame_width)
+        self.left_coords_label.pack(side="left", padx=5, pady=5)
+        self.left_coords_label.config(text="Green image:")
+        self.right_coords_label.pack(side="right", padx=5, pady=5)
+        self.right_coords_label.config(text="Red image:")
 
     def comb_ims(self):
         """
@@ -268,6 +272,8 @@ class GUI:
             self.button_green.pack_forget()
             self.button_red.pack_forget()
             self.button_both.pack_forget()
+            self.left_coords_label.config(text="Combined image:")
+            self.right_coords_label.pack_forget()
 
             if self.comb_zoom_clicked:
                 self.comb_zoom_clicked = self.com_zoom.toggle_button_action()
@@ -276,7 +282,7 @@ class GUI:
                 self.new_frame=tk.Frame(self.root, bg="gray")
                 self.new_frame.pack(side="bottom", fill="both", expand=True)
                 try:
-                    image_window = ScrollableImage(master=self.new_frame, gim=self.gim,
+                    image_window = ScrollableImage(coords_label=self.left_coords_label, master=self.new_frame, gim=self.gim,
                                                    rim=self.rim, width=self.root.winfo_width(),
                                                    lower=self.STD_LOWER, upper=self.STD_UPPER)
                 except Exception as e:
@@ -306,6 +312,9 @@ class GUI:
             self.window_center_frame.pack(side="left", padx=5, pady=5)
             self.window_width_frame.pack(side="left", padx=5, pady=5)
             self.root.update()
+            self.left_coords_label.config(text="Green image:")
+            self.right_coords_label.pack(side="right", padx=5, pady=5)
+            self.right_coords_label.config(text="Red image:")
 
             logger.info("Combined image frame hidden")
 
@@ -321,6 +330,14 @@ class GUI:
         self.add_contr_buttons(parent_frame=parent_frame)
 
         self.add_sliders()
+
+        self.left_coords_label = tk.Label(parent_frame, text="")
+        self.left_coords_label.pack(side="left", padx=5, pady=5)
+        self.left_coords_label.pack_forget()
+
+        self.right_coords_label = tk.Label(parent_frame, text="")
+        self.right_coords_label.pack(side="right", padx=5, pady=5)
+        self.right_coords_label.pack_forget()
 
     def add_main_buttons(self, parent_frame=None):
         """
@@ -659,6 +676,8 @@ class GUI:
         self.slider_center.set(self.DEFAULT_CENTER)
         self.slider_width.set(self.DEFAULT_WIDTH)
         self.last_contr=self.last_contr_comb=(32767, 65535)
+        self.left_coords_label.pack_forget()
+        self.right_coords_label.pack_forget()
 
     def windowing_parameters(self, center, length):
         """
