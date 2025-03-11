@@ -331,11 +331,11 @@ class GUI:
 
         self.add_sliders()
 
-        self.left_coords_label = tk.Label(parent_frame, text="")
+        self.left_coords_label = tk.Label(parent_frame, text="", width=33, bg="#181818", fg="#fcfcfc")
         self.left_coords_label.pack(side="left", padx=5, pady=5)
         self.left_coords_label.pack_forget()
 
-        self.right_coords_label = tk.Label(parent_frame, text="")
+        self.right_coords_label = tk.Label(parent_frame, text="", width=33, bg="#181818", fg="#fcfcfc")
         self.right_coords_label.pack(side="right", padx=5, pady=5)
         self.right_coords_label.pack_forget()
 

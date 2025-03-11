@@ -1,9 +1,9 @@
-# ismed2024Z_zad2_Babiak_Marciniak
+# cDNA_microarray_viewer
 
-## Instrukcja uruchomienia programu
-Python: Wersja 3.8 lub nowsza
+## Program Execution Instructions
+Python Version: 3.8 or newer
 
-1. Stworzenie i aktywowanie wirtualnego środowiska:
+1. Creating and Activating a Virtual Environment:
 
 ```
 python -m venv venv
@@ -12,20 +12,20 @@ venv\Scripts\activate     # Windows
 ```
 
 
-2. Instalacja zależności:
+2. Installing Dependencies:
 `pip install -r requirements.txt`
 
-3. Program uruchamia się za pomocą pliku **main.py**.
+3. Running the Program:
+The program is executed using the main.py file.
 
-## Krótki opis programu:
+## Brief Program Description:
+The program allows loading and displaying **TIF** files. It is designed for presenting images obtained from reading cDNA microarrays using two markers: **Cy3** and **Cy5**.
 
-Program umożliwia załadowanie oraz wyświetlenie plików typu **tif**. Jest dedykowany do prezentacji obrazów będących wynikiem odczytu mikromacierzy cDNA z dwóch znaczników: **Cy3** i **Cy5**. 
-
-Funkcjonalności programu obejmują:
-- Jednoczesne wczytanie obu obrazów
-- Wyświetlenie każdego z nich w odpowiedniej palecie barwnej:
-  - Odcienie zieleni dla kanału **Cy3**
-  - Odcienie czerwieni dla kanału **Cy5**
-- Wyświetlenie obrazu sumarycznego, będącego efektem nałożenia obu kanałów
-- Możliwość przybliżania wybranych fragmentów obrazu
-- Zmianę parametrów wyświetlania (szerokości i położenia środka okna kontrastu)
+Program Features:
+- Simultaneous loading of both images
+- Displaying each image using the appropriate color palette:
+  - Shades of green for the Cy3 channel
+  - Shades of red for the Cy5 channel
+- Displaying a composite image created by overlaying both channels
+- Ability to zoom in (coupled and separate modes) on selected parts of the image
+- Adjusting display parameters (window contrast width and center position)
