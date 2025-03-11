@@ -29,3 +29,4 @@ Program Features:
 - Displaying a composite image created by overlaying both channels
 - Ability to zoom in (coupled and separate modes) on selected parts of the image
 - Adjusting display parameters (window contrast width and center position)
+![Project Preview](image_2025-03-11_23-40-57.png)
