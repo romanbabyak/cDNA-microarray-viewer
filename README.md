@@ -19,7 +19,7 @@ venv\Scripts\activate     # Windows
 The program is executed using the main.py file.
 
 ## Brief Program Description:
-The program allows loading and displaying **TIF** files. It is designed for presenting images obtained from reading cDNA microarrays using two markers: **Cy3** and **Cy5**.
+The program allows loading and displaying 16-bit **TIF** files. It is designed for presenting images obtained from reading cDNA microarrays using two markers: **Cy3** and **Cy5**.
 
 Program Features:
 - Simultaneous loading of both images
