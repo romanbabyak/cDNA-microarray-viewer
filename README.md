@@ -1,4 +1,4 @@
-# cDNA_microarray_viewer
+# cDNA microarray viewer
 
 ## Program Execution Instructions
 Python Version: 3.8 or newer
